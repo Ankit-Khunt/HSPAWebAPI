@@ -26,6 +26,7 @@ namespace HSPAWebAPI.Data
         public async Task<IEnumerable<City>> GetCitiesAsync()
         {
             return await dc.Cities.ToListAsync();
+
         }
     }
 }
