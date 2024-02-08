@@ -1,4 +1,5 @@
-﻿using HSPAWebAPI.Interfaces;
+﻿using HSPAWebAPI.Dtos;
+using HSPAWebAPI.Interfaces;
 using HSPAWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,12 +19,28 @@ namespace HSPAWebAPI.Controllers
         public async Task<IActionResult> GetCities()
         {
             var cities = await umo.CityRepository.GetCitiesAsync();
-            return Ok(cities);
+
+            var cityDto = from c in cities
+                          select new CityDto()
+                          {
+                              id = c.id,
+                              Name = c.Name
+                          };
+
+            return Ok(cityDto);
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddCity(City city)
+        public async Task<IActionResult> AddCity(CityDto cityDto)
         {
+            // mapping
+            var city = new City
+            {
+                Name = cityDto.Name,
+                LastUpdatedBy = 1,
+                LastUpdatedOn = DateTime.Now,
+            };
+
             umo.CityRepository.AddCity(city);
             await umo.SaveAsync();
             return StatusCode(201);
