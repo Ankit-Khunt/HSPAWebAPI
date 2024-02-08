@@ -1,4 +1,5 @@
 using HSPAWebAPI.Data;
+using HSPAWebAPI.Helpers;
 using HSPAWebAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
+
 // for not getting cors error to use send data on different urls
 builder.Services.AddCors();
 
@@ -21,6 +25,14 @@ builder.Configuration.GetConnectionString("DefaultConnection")
 // Register repo if we created
 builder.Services.AddScoped<ICityRepository, CityRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+//Add Automapper
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+
+
+
+
+
 
 var app = builder.Build();
 

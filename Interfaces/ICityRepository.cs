@@ -11,5 +11,6 @@ namespace HSPAWebAPI.Interfaces
 
         void DeleteCity(int Cityid);
 
+        Task<City> FindCity(int id);
     }
 }

@@ -1,4 +1,5 @@
-﻿using HSPAWebAPI.Dtos;
+﻿using AutoMapper;
+using HSPAWebAPI.Dtos;
 using HSPAWebAPI.Interfaces;
 using HSPAWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -9,41 +10,56 @@ namespace HSPAWebAPI.Controllers
     [ApiController]
     public class CityController : ControllerBase
     {
-        private readonly IUnitOfWork umo;
-        public CityController(ICityRepository repo,IUnitOfWork umo)
+        private readonly IUnitOfWork uow;
+
+        public IMapper mapper { get; }
+
+        public CityController(IUnitOfWork umo, IMapper mapper)
         {
-            this.umo = umo;
+            this.uow = umo;
+            this.mapper = mapper;
         }
 
         [HttpGet("cities")]
         public async Task<IActionResult> GetCities()
         {
-            var cities = await umo.CityRepository.GetCitiesAsync();
+            var cities = await uow.CityRepository.GetCitiesAsync();
 
-            var cityDto = from c in cities
-                          select new CityDto()
-                          {
-                              id = c.id,
-                              Name = c.Name
-                          };
+            var citiesDto = mapper.Map<IEnumerable<CityDto>>(cities);
 
-            return Ok(cityDto);
+            //var cityDto = from c in cities
+            //              select new CityDto()
+            //              {
+            //                  id = c.id,
+            //                  Name = c.Name
+            //              };
+
+            return Ok(citiesDto);
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddCity(CityDto cityDto)
         {
-            // mapping
-            var city = new City
-            {
-                Name = cityDto.Name,
-                LastUpdatedBy = 1,
-                LastUpdatedOn = DateTime.Now,
-            };
+            var city = mapper.Map<City>(cityDto);
 
-            umo.CityRepository.AddCity(city);
-            await umo.SaveAsync();
+            city.LastUpdatedBy = 1;
+            city.LastUpdatedOn
+                = DateTime.Now;
+
+            uow.CityRepository.AddCity(city);
+            await uow.SaveAsync();
             return StatusCode(201);
+        }
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateCity(int id, CityDto cityDto)
+        {
+            var cityFromDb = await uow.CityRepository.FindCity(id);
+            mapper.Map(cityDto, cityFromDb);
+            cityFromDb.LastUpdatedOn= DateTime.Now;
+            cityFromDb.LastUpdatedBy = 1;
+            await uow.SaveAsync();
+            return StatusCode(200);
         }
 
         //[HttpDelete("delete/{id}")]
@@ -59,9 +75,9 @@ namespace HSPAWebAPI.Controllers
         public async Task<IActionResult> DeleteCity(int id)
         {
             // var city = await dc.Cities.FindAsync(id);
-            umo.CityRepository.DeleteCity(id);
+            uow.CityRepository.DeleteCity(id);
 
-            await umo.SaveAsync();
+            await uow.SaveAsync();
 
             return Ok(id);
         }
