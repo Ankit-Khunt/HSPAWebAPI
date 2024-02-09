@@ -34,6 +34,8 @@ namespace HSPAWebAPI.Controllers
             //                  Name = c.Name
             //              };
 
+            throw new Exception("Get method exception");
+
             return Ok(citiesDto);
         }
 
@@ -56,7 +58,7 @@ namespace HSPAWebAPI.Controllers
         {
             var cityFromDb = await uow.CityRepository.FindCity(id);
             mapper.Map(cityDto, cityFromDb);
-            cityFromDb.LastUpdatedOn= DateTime.Now;
+            cityFromDb.LastUpdatedOn = DateTime.Now;
             cityFromDb.LastUpdatedBy = 1;
             await uow.SaveAsync();
             return StatusCode(200);
